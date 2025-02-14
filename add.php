@@ -1,219 +1,251 @@
-<?php session_start(); ?>
-
 <?php
+session_start();
+
 if(!isset($_SESSION['valid'])) {
     header('Location: login.php');
+    exit();
 }
-?>
 
-<?php
-include_once("connection.php");
-
-$result = mysqli_query($mysqli, "SELECT * FROM contacts WHERE login_id=".$_SESSION['id']." ORDER BY id DESC");
-$totalContacts = mysqli_num_rows($result);
+$firstname = NULL;
+$lastname = NULL;
+$phone = NULL;
+$address = NULL;
+$note = NULL;
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="utf-8">
-  <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>MyContact - View Contacts</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Data</title>
+    <script>
+        function showPopup(message, type) {
+            var popup = document.createElement("div");
+            popup.className = "popup " + type;
+            popup.innerHTML = message;
+            document.body.appendChild(popup);
+            setTimeout(function() {
+                popup.remove();
+            }, 5000);
+        }
+    </script>
 
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+    <style>
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: 'Poppins', sans-serif;
+        }
 
-  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
-  <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+        #header {
+            background-color: #1c1c1c;
+            padding: 15px;
+            position: sticky;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
 
-  <link href="assets/css/style.css" rel="stylesheet">
+        #header a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 16px;
+            margin: 0 15px;
+        }
 
-  <style>
-    body {
-      background-color: #121212;
-      color: #e0e0e0;
-      font-family: 'Poppins', sans-serif;
-    }
+        #header a:hover {
+            color: #BB86FC;
+        }
 
-    #header {
-      background-color: #1c1c1c;
-      padding: 15px;
-      position: sticky;
-      top: 0;
-      width: 100%;
-      z-index: 1000;
-    }
+        .container {
+            margin-top: 50px;
+        }
 
-    #header a {
-      color: #fff;
-      text-decoration: none;
-      font-size: 16px;
-      margin: 0 15px;
-    }
+        .form-container {
+            background-color: #2d2d2d;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
 
-    #header a:hover {
-      color: #3498db;
-    }
+        .form-container h2 {
+            color: #BB86FC;
+            text-align: center;
+        }
 
-    .container {
-      margin-top: 50px;
-    }
+        .form-container input {
+            width: 90%;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            background-color: #333;
+            color: #e0e0e0;
+            border: 1px solid #3498db;
+        }
 
-    .table-dark {
-      background-color: #333;
-    }
+        .form-container input:focus {
+            border-color: #BB86FC;
+        }
 
-    .table-dark th, .table-dark td {
-      color: #e0e0e0;
-    }
+        .form-container input[type="submit"] {
+            background-color: #6200EE;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
 
-    .search-container {
-      margin-bottom: 20px;
-      text-align: right;
-    }
+        .form-container input[type="submit"]:hover {
+            background-color: #3700B3;
+        }
 
-    .search-container input {
-      padding: 10px;
-      border-radius: 5px;
-      border: 1px solid #3498db;
-      background-color: #222;
-      color: #fff;
-    }
+        .navbar {
+            background-color: #333;
+            padding: 10px;
+            font-size: 16px;
+        }
 
-    .search-container input:focus {
-      border-color: #3498db;
-    }
+        .navbar a {
+            color: #e0e0e0;
+            text-decoration: none;
+            margin-right: 20px;
+        }
 
-    .statistics {
-      margin-bottom: 20px;
-      background-color: #2d2d2d;
-      padding: 15px;
-      border-radius: 5px;
-      color: #e0e0e0;
-    }
+        .navbar a:hover {
+            color: #BB86FC;
+        }
 
-    .statistics h3 {
-      color: #3498db;
-    }
+        .popup {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 16px;
+            z-index: 9999;
+            text-align: center;
+        }
 
-    .btn {
-      background-color: #3498db;
-      color: white;
-      padding: 10px 20px;
-      border-radius: 5px;
-      text-decoration: none;
-    }
+        .popup.success {
+            background-color: #4CAF50;
+        }
 
-    .btn:hover {
-      background-color: #2980b9;
-    }
+        .popup.error {
+            background-color: #f44336;
+        }
 
-    .navbar {
-      background-color: #333;
-      padding: 10px;
-      font-size: 16px;
-    }
+        .center-btn-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
 
-    .navbar a {
-      color: #e0e0e0;
-      text-decoration: none;
-      margin-right: 20px;
-    }
+        .get-started-btn {
+            background-color: #2ecc71;
+            color: white;
+            padding: 12px 30px;
+            font-size: 18px;
+            border-radius: 5px;
+            text-decoration: none;
+        }
 
-    .navbar a:hover {
-      color: #3498db;
-    }
-  </style>
-
+        .get-started-btn:hover {
+            background-color: #27ae60;
+        }
+        .nav {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .nav a {
+            margin: 0 10px;
+            text-decoration: none;
+            color: #BB86FC;
+            font-size: 16px;
+        }
+        .nav a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
-
 <body>
 
   <header id="header" class="fixed-top">
-    <div class="container d-flex align-items-center justify-content-between">
-      <div class="logo">
-        <h1><a href="index.php">MyContact</a></h1>
-      </div>
-
-      <nav id="navbar" class="navbar">
-        <ul>
-          <li><a class="nav-link" href="index.php">Home</a></li>
-          <li><a class="nav-link" href="add.php">Add New Contact</a></li>
-          <li><a class="nav-link" href="logout.php">Logout</a></li>
-        </ul>
-      </nav>
+  <div class="nav">
+        <a href="index.php">Home</a> | <a href="view.php">View Contacts</a> | <a href="logout.php">Logout</a>
     </div>
+
   </header>
 
   <main id="main" class="container">
-    <div class="statistics">
-      <h3>Statistics</h3>
-      <p><strong>Total Contacts:</strong> <?php echo $totalContacts; ?></p>
+    <div class="form-container">
+      <h2>Add New Contact</h2>
+
+      <form action="add.php" method="post" name="form1">
+        <input type="text" name="firstname" placeholder="First Name" required>
+        <input type="text" name="lastname" placeholder="Last Name" required>
+        <input type="text" name="phone" placeholder="Phone Number" required>
+        <input type="text" name="address" placeholder="Address" required>
+        <input type="text" name="note" placeholder="Note" required>
+
+        <input type="submit" name="Submit" value="Add Contact">
+      </form>
     </div>
 
-    <div class="search-container">
-      <input type="text" id="searchInput" placeholder="Search Contacts..." onkeyup="searchContacts()">
-    </div>
-
-    <table class="table table-dark table-bordered" id="contactsTable">
-      <thead>
-        <tr>
-          <th>First Name</th>
-          <th>Last Name</th>
-          <th>Phone Number</th>
-          <th>Address</th>
-          <th>Note</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php
-        while($res = mysqli_fetch_array($result)) {		
-          echo "<tr>";
-          echo "<td>".$res['firstname']."</td>";
-          echo "<td>".$res['lastname']."</td>";
-          echo "<td>".$res['phone']."</td>";	
-          echo "<td>".$res['address']."</td>";	
-          echo "<td>".$res['note']."</td>";	
-          echo "<td><a href=\"edit.php?id=$res[id]\" class='btn'>Edit</a> | <a href=\"delete.php?id=$res[id]\" onClick=\"return confirm('Are you sure you want to delete?')\" class='btn'>Delete</a></td>";		
-          echo "</tr>";
-        }
-        ?>
-      </tbody>
-    </table>
+    <?php if (!isset($_SESSION['valid'])) { ?>
+      <div class="center-btn-container">
+        <a href="register.php" class="get-started-btn">Get Started</a>
+      </div>
+    <?php } ?>
   </main>
 
-  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <?php
+    include_once("connection.php");
 
-  <script>
-    function searchContacts() {
-      var input, filter, table, tr, td, i, txtValue;
-      input = document.getElementById("searchInput");
-      filter = input.value.toUpperCase();
-      table = document.getElementById("contactsTable");
-      tr = table.getElementsByTagName("tr");
+    if (isset($_POST['Submit'])) {
+        $firstname = isset($_POST['firstname']) ? $_POST['firstname'] : '';
+        $lastname = isset($_POST['lastname']) ? $_POST['lastname'] : '';
+        $phone = isset($_POST['phone']) ? $_POST['phone'] : '';
+        $address = isset($_POST['address']) ? $_POST['address'] : '';
+        $note = isset($_POST['note']) ? $_POST['note'] : '';
+        $loginId = $_SESSION['id'];
 
-      for (i = 1; i < tr.length; i++) {
-        td = tr[i].getElementsByTagName("td");
-        var match = false;
-        for (var j = 0; j < td.length - 1; j++) {
-          if (td[j]) {
-            txtValue = td[j].textContent || td[j].innerText;
-            if (txtValue.toUpperCase().indexOf(filter) > -1) {
-              match = true;
-              break;
+        if (empty($firstname) || empty($lastname) || empty($phone) || empty($address) || empty($note)) {
+            if (empty($firstname)) {
+                echo "<script>showPopup('First Name field is empty.', 'error');</script>";
             }
-          }
-        }
-        if (match) {
-          tr[i].style.display = "";
+            if (empty($lastname)) {
+                echo "<script>showPopup('Last Name field is empty.', 'error');</script>";
+            }
+            if (empty($phone)) {
+                echo "<script>showPopup('Phone field is empty.', 'error');</script>";
+            }
+            if (empty($address)) {
+                echo "<script>showPopup('Address field is empty.', 'error');</script>";
+            }
+            if (empty($note)) {
+                echo "<script>showPopup('Note field is empty.', 'error');</script>";
+            }
         } else {
-          tr[i].style.display = "none";
+            $stmt = $mysqli->prepare("INSERT INTO contacts(firstname, lastname, phone, address, note, login_id) VALUES(?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("sssssi", $firstname, $lastname, $phone, $address, $note, $loginId);
+
+            if ($stmt->execute()) {
+                echo "<script>showPopup('Data added successfully.', 'success');</script>";
+                echo "<script>setTimeout(function(){ window.location.href = 'view.php'; }, 3000);</script>";
+            } else {
+                echo "<script>showPopup('Error: " . $stmt->error . "', 'error');</script>";
+            }
+
+            $stmt->close();
         }
-      }
     }
-  </script>
+  ?>
+
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
