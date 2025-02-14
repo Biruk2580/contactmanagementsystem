@@ -59,7 +59,7 @@ session_start();
         input[type="text"],
         input[type="password"],
         input[type="submit"] {
-            width: 100%;
+            width: 95%;
             padding: 15px;
             margin: 10px 0;
             background-color: #333333;
